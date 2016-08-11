@@ -16,14 +16,14 @@ var HeaderComponent = React.createClass({
 
 
 var Main = React.createClass({
-	render: function() {
-		return (
-			<div className="container">
-				<HeaderComponent />
-				<DrawComponent />
-			</div>
-		);
-	}
+  render: function() {
+    return (
+      <div className="container">
+        <HeaderComponent />
+        <DrawComponent />
+      </div>
+    );
+  }
 });
 
 ReactDOM.render(

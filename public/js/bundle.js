@@ -46,9 +46,8 @@ module.exports = function() {
 				}
 			}
 
-
+			// the list is shuffled first
 			shuffle(this.participants);
-
 
 			this.results = this.process(this.participants, []);
 
