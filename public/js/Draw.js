@@ -13,10 +13,16 @@ module.exports = function() {
 				this.participants.push(secondParticipant);
 			}
 		}
+		else {
+			throw new Error("missing argument");
+		}
 
 	};
 
 	this.execute = function (callback) {
+		if (callback === null) {
+			throw new Error("missing argument");
+		}
 		if (this.participants.length == 0) {
 			callback({message: "you need at least 2 participants."});
 			return 0;
@@ -31,14 +37,14 @@ module.exports = function() {
 					return 0;
 				}
 			}
-			this.results = process(this.participants, []);
+			this.results = this.process(this.participants, []);
 
 			callback(null, this.results);
 			return 1;
 		}
 		else {
 			callback({
-				message: "number of particpants needs to be pair."
+				message: "number of participants needs to be pair."
 			});
 			return 0;
 		}
@@ -49,7 +55,7 @@ module.exports = function() {
 	// recursive method.
 	// randomly matches 2 persons from the array *list* and add them in the *matches* array,
 	// until there is nobody left in the array *list*.
-	var process = function(list, matches, sameCoupleCounter = 0) {
+	this.process = function(list, matches, sameCoupleCounter = 0) {
 		
 		if (list && list.length > 0) {
 
@@ -65,11 +71,11 @@ module.exports = function() {
 				// if this is the 10th time in a row for this married couple
 				// we relaunch the entire draw from the begining to avoid infinite loop
 				if (sameCoupleCounter == 10) {
-					return process(this.participants, []);
+					return this.process(this.participants, []);
 				}
 
 				// retry the matching process
-				return process(list, matches, sameCoupleCounter);
+				return this.process(list, matches, sameCoupleCounter);
 			}
 
 			matches.push({
@@ -81,7 +87,7 @@ module.exports = function() {
 			list.splice(randomIndex, 1);
 			list.splice(0, 1);
 
-			return process(list, matches);
+			return this.process(list, matches);
 		}
 		else {
 			return matches;

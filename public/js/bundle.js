@@ -14,12 +14,15 @@ module.exports = function() {
 				this.participants.push(secondParticipant);
 			}
 		}
+		else {
+			throw new Error("missing argument");
+		}
 
 	};
 
 	this.execute = function (callback) {
 		if (this.participants.length == 0) {
-			callback({message: "you need at least 2 participants."});
+			callback(null, {message: "you need at least 2 participants."});
 			return 0;
 		}
 		else if (this.participants.length % 2 == 0) {
