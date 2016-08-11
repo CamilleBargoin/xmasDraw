@@ -97,7 +97,6 @@ module.exports = React.createClass({displayName: "exports",
 	getInitialState () {
 	    return {
 	    	showForm: false,
-	    	participants: [],
 	    	draws: [],
 	    	currentDraw: null
 	    };
@@ -115,12 +114,10 @@ module.exports = React.createClass({displayName: "exports",
 	},
 
 
-	// ex: {name: "bob"} or {name: "bob", spouse: "kim"}
 	addParticipant (participant) {
 
-		let draw = this.state.draws[this.state.currentDraw];
-
-		draw.addParticipant(participant);
+		const currentDraw = this.state.draws[this.state.currentDraw];
+		currentDraw.addParticipant(participant);
 
 		this.forceUpdate();
 	},
@@ -160,7 +157,7 @@ module.exports = React.createClass({displayName: "exports",
 });
 
 
-var DrawForm = React.createClass({displayName: "DrawForm",
+const DrawForm = React.createClass({displayName: "DrawForm",
 
 	getDefaultProps() {
 		return {

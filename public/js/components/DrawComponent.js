@@ -65,7 +65,7 @@ module.exports = React.createClass({
 });
 
 
-var DrawForm = React.createClass({
+const DrawForm = React.createClass({
 
 	getDefaultProps() {
 		return {
