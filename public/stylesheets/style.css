@@ -12,6 +12,11 @@
 	background-color: #d50000 !important;
 }
 
+.toastWarning {
+	background-color: #ffeb3b !important;
+	color: black !important;
+}
+
 li {
 	font-size: 1.5em;
 	text-align: center;

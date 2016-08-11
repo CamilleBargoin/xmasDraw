@@ -41,7 +41,11 @@ module.exports = React.createClass({
 				});
 			}
 			else {
-				 Materialize.toast("error: " + err.message, 4000, 'toastError');
+
+				if (err.type == "warning")
+				 	Materialize.toast("Attention: " + err.message, 4000, 'toastWarning');
+				else
+					Materialize.toast("Erreur: " + err.message, 4000, 'toastError');
 			}
 		});
 	},
@@ -168,7 +172,7 @@ const DrawResultsList = React.createClass({
 
 		return (
 			<div className="row">
-				<div className="col s9">
+				<div className="col s12">
 					{drawList}
 				</div>
 			</div>
@@ -213,7 +217,7 @@ const DrawResults = React.createClass({
 			});
 
 			return (
-				<div className="col s4">
+				<div className="col s6">
 					<h5>Résultats de la pige n°{this.props.index+1}:</h5>
 					<ul className="collection col s12">
 						{results}

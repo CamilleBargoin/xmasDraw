@@ -5,6 +5,10 @@ module.exports = function() {
 
 	this.addParticipant = function(participant) {
 
+		if (typeof participant !== "object" ) {
+			throw new Error("missing argument");
+		}
+
 		if (participant.name) {
 			this.participants.push(participant);
 
@@ -13,18 +17,15 @@ module.exports = function() {
 				this.participants.push(secondParticipant);
 			}
 		}
-		else {
-			throw new Error("missing argument");
-		}
 
 	};
 
 	this.execute = function (callback) {
-		if (callback === null) {
-			throw new Error("missing argument");
-		}
+
 		if (this.participants.length == 0) {
-			callback({message: "you need at least 2 participants."});
+			callback({
+				type: "error",
+				message: "Il faut au moins 2 particpants pour lancer le tirage."});
 			return 0;
 		}
 		else if (this.participants.length % 2 == 0) {
@@ -32,7 +33,8 @@ module.exports = function() {
 			if (this.participants.length == 2) {
 				if (this.participants[0].spouse == this.participants[1].name) {
 					callback({
-						message: "you need more people"
+						type: "warning",
+						message: "Il faut plus qu'un couple pour lancer le tirage."
 					});
 					return 0;
 				}
@@ -44,7 +46,8 @@ module.exports = function() {
 		}
 		else {
 			callback({
-				message: "number of participants needs to be pair."
+				type: "warning",
+				message: "Le nombre de participant doit être pair pour lancer le tirage."
 			});
 			return 0;
 		}
@@ -56,7 +59,11 @@ module.exports = function() {
 	// randomly matches 2 persons from the array *list* and add them in the *matches* array,
 	// until there is nobody left in the array *list*.
 	this.process = function(list, matches, sameCoupleCounter = 0) {
-		
+
+		if (!list && !matches) {
+			throw new Error("missing argument");
+		}
+
 		if (list && list.length > 0) {
 
 			const firstPerson = list[0];

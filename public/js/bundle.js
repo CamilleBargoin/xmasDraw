@@ -6,6 +6,10 @@ module.exports = function() {
 
 	this.addParticipant = function(participant) {
 
+		if (typeof participant !== "object" ) {
+			throw new Error("missing argument");
+		}
+
 		if (participant.name) {
 			this.participants.push(participant);
 
@@ -14,15 +18,15 @@ module.exports = function() {
 				this.participants.push(secondParticipant);
 			}
 		}
-		else {
-			throw new Error("missing argument");
-		}
 
 	};
 
 	this.execute = function (callback) {
+
 		if (this.participants.length == 0) {
-			callback(null, {message: "you need at least 2 participants."});
+			callback({
+				type: "error",
+				message: "Il faut au moins 2 particpants pour lancer le tirage."});
 			return 0;
 		}
 		else if (this.participants.length % 2 == 0) {
@@ -30,19 +34,21 @@ module.exports = function() {
 			if (this.participants.length == 2) {
 				if (this.participants[0].spouse == this.participants[1].name) {
 					callback({
-						message: "you need more people"
+						type: "warning",
+						message: "Il faut plus qu'un couple pour lancer le tirage."
 					});
 					return 0;
 				}
 			}
-			this.results = process(this.participants, []);
+			this.results = this.process(this.participants, []);
 
 			callback(null, this.results);
 			return 1;
 		}
 		else {
 			callback({
-				message: "number of particpants needs to be pair."
+				type: "warning",
+				message: "Le nombre de participant doit être pair pour lancer le tirage."
 			});
 			return 0;
 		}
@@ -53,8 +59,12 @@ module.exports = function() {
 	// recursive method.
 	// randomly matches 2 persons from the array *list* and add them in the *matches* array,
 	// until there is nobody left in the array *list*.
-	var process = function(list, matches, sameCoupleCounter = 0) {
-		
+	this.process = function(list, matches, sameCoupleCounter = 0) {
+
+		if (!list && !matches) {
+			throw new Error("missing argument");
+		}
+
 		if (list && list.length > 0) {
 
 			const firstPerson = list[0];
@@ -69,11 +79,11 @@ module.exports = function() {
 				// if this is the 10th time in a row for this married couple
 				// we relaunch the entire draw from the begining to avoid infinite loop
 				if (sameCoupleCounter == 10) {
-					return process(this.participants, []);
+					return this.process(this.participants, []);
 				}
 
 				// retry the matching process
-				return process(list, matches, sameCoupleCounter);
+				return this.process(list, matches, sameCoupleCounter);
 			}
 
 			matches.push({
@@ -85,7 +95,7 @@ module.exports = function() {
 			list.splice(randomIndex, 1);
 			list.splice(0, 1);
 
-			return process(list, matches);
+			return this.process(list, matches);
 		}
 		else {
 			return matches;
@@ -136,7 +146,11 @@ module.exports = React.createClass({displayName: "exports",
 				});
 			}
 			else {
-				 Materialize.toast("error: " + err.message, 4000, 'toastError');
+
+				if (err.type == "warning")
+				 	Materialize.toast("Attention: " + err.message, 4000, 'toastWarning');
+				else
+					Materialize.toast("Erreur: " + err.message, 4000, 'toastError');
 			}
 		});
 	},
@@ -263,7 +277,7 @@ const DrawResultsList = React.createClass({displayName: "DrawResultsList",
 
 		return (
 			React.createElement("div", {className: "row"}, 
-				React.createElement("div", {className: "col s9"}, 
+				React.createElement("div", {className: "col s12"}, 
 					drawList
 				)
 			)
@@ -308,7 +322,7 @@ const DrawResults = React.createClass({displayName: "DrawResults",
 			});
 
 			return (
-				React.createElement("div", {className: "col s4"}, 
+				React.createElement("div", {className: "col s6"}, 
 					React.createElement("h5", null, "Résultats de la pige n°", this.props.index+1, ":"), 
 					React.createElement("ul", {className: "collection col s12"}, 
 						results

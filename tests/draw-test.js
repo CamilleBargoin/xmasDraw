@@ -1,7 +1,7 @@
 
 var chai = require('chai')
-  , expect = chai.expect
-  , should = chai.should();
+var expect = chai.expect
+var should = chai.should();
 var assert = require('chai').assert;
 chai.use(require('chai-things'));
 
@@ -23,13 +23,7 @@ describe("Draw.addParticipant", function() {
 	});
 
 	it('should throw an error if no argument', function() {
-		
-		try { 
-		    newDraw.addParticipant();
-		}
-		catch(err) {
-			expect(err).to.eql(new Error('missing argument'));
-		}
+		expect(newDraw.addParticipant).to.throw(Error, "missing argument");
 	});
 
 });
@@ -38,16 +32,6 @@ describe("Draw.addParticipant", function() {
 describe("Draw.execute", function() {
 	
 	var newDraw = new draw();
-
-	it('should have a callback', function(done){
-		try { 
-		    newDraw.execute();
-		}
-		catch(err) {
-			done();
-			expect(err).to.eql(new Error('missing argument'));
-		}
-	});
 
 	it('should stop and pass error in callback if the list of participants is empty', function(done) {
 		assert.equal(newDraw.execute(function(err, result) {
@@ -106,5 +90,52 @@ describe("Draw.execute", function() {
 describe("Draw.process", function() {
 
 	var newDraw = new draw();
+
+	it("should return an array of randomly matched participants", function() {
+
+		let participants = [
+			{name: "barack", spouse: "michelle"},
+			{name: "michelle", spouse: "barack"},
+			{name: "john"},
+			{name: "paul"},
+			{name: "george"},
+			{name: "ringo"}
+		];
+
+		const result = newDraw.process(participants, []);
+
+		assert.isArray(result);
+		for (var i = 0; i < result.length; i++) {
+			assert.notDeepEqual(result[i]["1"], result[i]["2"], "matched participants must not be equal");
+		}
+	});
+
+	it("should throw an error if no argument", function() {
+
+		expect(newDraw.process.bind(newDraw, null)).to.throw(Error, "missing argument");
+	});
+
+	it("should not match two participant that are a couple", function() {
+		let participants = [
+			
+			{name: "david", spouse: "victoria"},
+			{name: "victoria", spouse: "david"},
+			{name: "romeo", spouse: "juliette"},
+			{name: "juliette", spouse: "romeo"}
+		];
+
+		var result = newDraw.process(participants, []);
+
+		assert.isArray(result);
+
+		for (var i = 0; i < result.length; i++) {
+
+			const match1 = result[i]["1"];
+			const match2 = result[i]["2"];
+
+			match1.name.should.not.equal(match2.spouse, "matched participants are from the same couple");
+			match2.name.should.not.equal(match1.spouse, "matched participants are from the same couple");
+		}
+	});
 
 });
