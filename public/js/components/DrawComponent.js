@@ -1,11 +1,10 @@
-const drawService = require("../services/drawService.js");
+const Draw = require("../Draw.js");
 
-const Draw = React.createClass({
+module.exports = React.createClass({
 
 	getInitialState () {
 	    return {
 	    	showForm: false,
-	    	participants: [],
 	    	draws: [],
 	    	currentDraw: null
 	    };
@@ -13,22 +12,20 @@ const Draw = React.createClass({
 
 	createDraw () {
 
-		const newDraw = new drawService();
-		
+		const newDraw = new Draw();
+
 		this.setState({
 			showForm: true,
 			draws: this.state.draws.concat([newDraw]),
-			currentDraw: (this.state.currentDraw == null) ? 0 : this.state.currentDraw ++
+			currentDraw: (this.state.currentDraw === null) ? 0 : this.state.currentDraw + 1
 		});
 	},
 
 
-	// ex: {name: "bob"} or {name: "bob", spouse: "kim"}
 	addParticipant (participant) {
 
-		let draw = this.state.draws[this.state.currentDraw];
-
-		draw.addParticipant(participant);
+		const currentDraw = this.state.draws[this.state.currentDraw];
+		currentDraw.addParticipant(participant);
 
 		this.forceUpdate();
 	},
@@ -38,7 +35,7 @@ const Draw = React.createClass({
 		const self = this;
 		this.state.draws[this.state.currentDraw].execute(function(err, results) {
 			if (!err) {
-				console.log(results);
+
 				self.setState({
 					showForm: false
 				});
@@ -50,13 +47,16 @@ const Draw = React.createClass({
 	},
 
 	render () {
+		var results =this.state.draws.map(function(draw, index) {
+			return draw.results;
+		});
 
 
 		return (
 		  <div className="BodyComponent">
-		  	{/*<DrawResultsList draws={this.state.draws} />*/}
+		  	<DrawResultsList results={results} />
 		  	<div className="row">
-		    	<a className="waves-effect waves-light btn" onClick={this.createDraw}>Créer pige</a>
+		    	<a className="waves-effect waves-light btn" onClick={this.createDraw}>Nouvelle pige</a>
 		  	</div>
 		  	<DrawForm display={this.state.showForm} draw={this.state.draws[this.state.currentDraw]} addParticipant={this.addParticipant} executeDraw={this.executeDraw}/>
 		  </div>
@@ -108,24 +108,38 @@ var DrawForm = React.createClass({
 		if (this.props.display) {
 
 			var participants = this.props.draw.participants.map(function(participant, index) {
-				return <div className="chip" key={index}>{participant.name}</div>
+
+				let label = participant.name;
+
+				if (participant.spouse) {
+					label += " (" + participant.spouse + ")";
+				}
+
+				return <div className="chip" key={index}>{label}</div>
 			});
 
 			return (
-				<form onSubmit={this.executeDraw}>
+				<form>
 					<div className="row col s6 participantsContainer">
 						{participants}
 					</div>
 					<div className="row">
+						<p>
+							Entrer le nom d&#39;un nouveau participant. Si il/elle est en couple, vous pouvez directement ajouter son/sa coinjoint(e).
+						</p>
+						<br />
+
 						<input type="text" placeholder="nom" className="col s2" ref="input" />
+
 						<div className="col s2 spouseLabel">Conjoint(e) ?</div>
 						<input type="text" placeholder="nom" className="col s2" ref="inputSpouse" />
+
 						<div className="col s2">
-							<a className="btn-floating btn-small waves-effect waves-light red" onClick={this.addParticipant}><i className="material-icons">add</i></a>
+	        				<a className="waves-effect waves-light btn" onClick={this.addParticipant}>Ajouter</a>
 	        			</div>
 	        		</div>
-					<div className="row">
-						<input type="submit" value="Submit" />
+					<div className="row" style={{marginTop: "40px"}}>
+	        			<a className="waves-effect waves-light btn purple darken-4" onClick={this.executeDraw}>Lancer le tirage !</a>
 					</div> 
 				</form>
 			);
@@ -145,17 +159,18 @@ const DrawResultsList = React.createClass({
 	
 	render () {
 
-
-		const drawList = this.props.draws.map(function(draw, index) {
+		var drawList = this.props.results.map(function(resultSet, index) {
 			return (
-					<DrawResults key={index} draw={draw} />
+				<DrawResults key={index} index={index} resultSet={resultSet}/>
 			);
 		});
 
-		return (
-			<div>
 
-				{drawList}
+		return (
+			<div className="row">
+				<div className="col s9">
+					{drawList}
+				</div>
 			</div>
 		);
 	}
@@ -166,30 +181,52 @@ const DrawResults = React.createClass({
 
 	getDefaultProps() {
 		return {
-		  draw: []
+		  draw: {results: []}
 		};
+	},
+
+	getInitialState() {
+	    return {
+	        resultSet: this.props.resultSet  
+	    };
+	},
+
+	componentWillReceiveProps(nextProps) {
+	    this.setState({
+	    	resultSet: nextProps.resultSet
+	    });  
 	},
 
 	render () {
 
-		const results = this.props.draw.map(function(couple, index) {
+		let results = <div />;
+
+		if (this.state.resultSet && this.state.resultSet.length > 0) {
+
+			results = this.state.resultSet.map(function(couple, index) {
+				return (
+					<li className="collection-item  col s12" key={index} >
+						<strong>{couple["1"].name.toUpperCase()}</strong> avec <strong>{couple["2"].name.toUpperCase()}</strong>
+					
+					</li>
+				);
+			});
+
 			return (
-				<li key = {index} >
-					<strong>{couple["1"].name}</strong> avec <strong>{couple["2"].name}</strong>
-				
-				</li>
+				<div className="col s4">
+					<h5>Résultats de la pige n°{this.props.index+1}:</h5>
+					<ul className="collection col s12">
+						{results}
+					</ul>
+				</div>
 			);
-		});
-		console.log(results);
-		return (
-			<div>
-				<h5>Résultats de la pige:</h5>
-				<ul>
-					{results}
-				</ul>
-			</div>
-		);
+
+			
+		}
+
+		return <div />;
+
+
 	}
 });
 
-module.exports = Draw;

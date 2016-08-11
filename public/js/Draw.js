@@ -51,7 +51,7 @@ module.exports = function() {
 	// until there is nobody left in the array *list*.
 	var process = function(list, matches, sameCoupleCounter = 0) {
 		
-		if (list.length > 0) {
+		if (list && list.length > 0) {
 
 			const firstPerson = list[0];
 			const randomIndex = Math.floor(Math.random() * (list.length - 1) + 1);

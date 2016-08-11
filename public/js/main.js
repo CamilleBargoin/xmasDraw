@@ -1,4 +1,4 @@
-var Draw = require("./components/Draw.js");
+var DrawComponent = require("./components/DrawComponent.js");
 
 
 var HeaderComponent = React.createClass({
@@ -6,7 +6,9 @@ var HeaderComponent = React.createClass({
     return (
       <div className="HeaderComponent">
         <h1>Pige de Noël</h1>
-        <p>blabla blabla blabla</p>
+        <p>Cette petite application permet de créer des piges et d&#39;y ajouter des participants.<br/>
+        Il est ensuite possible de lancer le tirage automatique. Les résultats seront automatiquement affichés.
+        </p>
       </div>
     );
   }
@@ -18,7 +20,7 @@ var Main = React.createClass({
 		return (
 			<div className="container">
 				<HeaderComponent />
-				<Draw />
+				<DrawComponent />
 			</div>
 		);
 	}
