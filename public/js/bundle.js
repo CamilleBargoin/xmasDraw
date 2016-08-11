@@ -4,6 +4,7 @@ module.exports = function() {
 	this.participants = [];
 	this.results = [];
 
+	// Adds a new participant to the list, and if a spouse is given, it adds it too.
 	this.addParticipant = function(participant) {
 
 		if (typeof participant !== "object" ) {
@@ -21,6 +22,10 @@ module.exports = function() {
 
 	};
 
+
+	//  runs several checks to be sure the list of participants is good, then calls
+	// the recursive *process* method to build the result array and pass it to
+	// a callback
 	this.execute = function (callback) {
 
 		if (this.participants.length == 0) {
@@ -40,6 +45,11 @@ module.exports = function() {
 					return 0;
 				}
 			}
+
+
+			shuffle(this.participants);
+
+
 			this.results = this.process(this.participants, []);
 
 			callback(null, this.results);
@@ -101,9 +111,32 @@ module.exports = function() {
 			return matches;
 		}
 	};
+
+
+	var shuffle = function(array) {
+	  var currentIndex = array.length, temporaryValue, randomIndex;
+
+	  // While there remain elements to shuffle...
+	  while (0 !== currentIndex) {
+
+	    // Pick a remaining element...
+	    randomIndex = Math.floor(Math.random() * currentIndex);
+	    currentIndex -= 1;
+
+	    // And swap it with the current element.
+	    temporaryValue = array[currentIndex];
+	    array[currentIndex] = array[randomIndex];
+	    array[randomIndex] = temporaryValue;
+	  }
+
+	  return array;
+	}
 };
 },{}],2:[function(require,module,exports){
 const Draw = require("../Draw.js");
+const DrawFormComponent = require("./DrawFormComponent.js");
+const DrawResultsListComponent = require("./DrawResultsListComponent.js");
+
 
 module.exports = React.createClass({displayName: "exports",
 
@@ -117,7 +150,7 @@ module.exports = React.createClass({displayName: "exports",
 
 	createDraw () {
 
-		const newDraw = new Draw();
+		let newDraw = new Draw();
 
 		this.setState({
 			showForm: true,
@@ -132,21 +165,23 @@ module.exports = React.createClass({displayName: "exports",
 		const currentDraw = this.state.draws[this.state.currentDraw];
 		currentDraw.addParticipant(participant);
 
+		// tells react to re-render the page with updated data
 		this.forceUpdate();
 	},
 
 	executeDraw () {
 
 		const self = this;
-		this.state.draws[this.state.currentDraw].execute(function(err, results) {
-			if (!err) {
 
+		this.state.draws[this.state.currentDraw].execute(function(err, results) {
+
+			if (!err) {
 				self.setState({
 					showForm: false
 				});
 			}
 			else {
-
+				// display errors / warning dialog 
 				if (err.type == "warning")
 				 	Materialize.toast("Attention: " + err.message, 4000, 'toastWarning');
 				else
@@ -156,36 +191,29 @@ module.exports = React.createClass({displayName: "exports",
 	},
 
 	render () {
-		var results =this.state.draws.map(function(draw, index) {
+		var results = this.state.draws.map(function(draw, index) {
 			return draw.results;
 		});
 
-
 		return (
 		  React.createElement("div", {className: "BodyComponent"}, 
-		  	React.createElement(DrawResultsList, {results: results}), 
+		  	React.createElement(DrawResultsListComponent, {results: results}), 
 		  	React.createElement("div", {className: "row"}, 
 		    	React.createElement("a", {className: "waves-effect waves-light btn", onClick: this.createDraw}, "Nouvelle pige")
 		  	), 
-		  	React.createElement(DrawForm, {display: this.state.showForm, draw: this.state.draws[this.state.currentDraw], addParticipant: this.addParticipant, executeDraw: this.executeDraw})
+		  	React.createElement(DrawFormComponent, {display: this.state.showForm, draw: this.state.draws[this.state.currentDraw], addParticipant: this.addParticipant, executeDraw: this.executeDraw})
 		  )
 		);
 	}
 });
+},{"../Draw.js":1,"./DrawFormComponent.js":3,"./DrawResultsListComponent.js":5}],3:[function(require,module,exports){
 
-
-const DrawForm = React.createClass({displayName: "DrawForm",
+module.exports = React.createClass({displayName: "exports",
 
 	getDefaultProps() {
 		return {
 		  draw: {participants: []}
 		};
-	},
-
-	componentWillReceiveProps(nextProps) {
-	    this.setState({
-	    	list: nextProps.participants
-	    });  
 	},
 
 	addParticipant () {
@@ -216,6 +244,9 @@ const DrawForm = React.createClass({displayName: "DrawForm",
 
 		if (this.props.display) {
 
+
+
+			// list of people registered for the draw
 			var participants = this.props.draw.participants.map(function(participant, index) {
 
 				let label = participant.name;
@@ -257,36 +288,9 @@ const DrawForm = React.createClass({displayName: "DrawForm",
 			return React.createElement("div", null)
 	}
 });
+},{}],4:[function(require,module,exports){
 
-
-const DrawResultsList = React.createClass({displayName: "DrawResultsList",
-	getDefaultProps() {
-		return {
-		  draws: []
-		};
-	},
-	
-	render () {
-
-		var drawList = this.props.results.map(function(resultSet, index) {
-			return (
-				React.createElement(DrawResults, {key: index, index: index, resultSet: resultSet})
-			);
-		});
-
-
-		return (
-			React.createElement("div", {className: "row"}, 
-				React.createElement("div", {className: "col s12"}, 
-					drawList
-				)
-			)
-		);
-	}
-});
-
-
-const DrawResults = React.createClass({displayName: "DrawResults",
+module.exports = React.createClass({displayName: "exports",
 
 	getDefaultProps() {
 		return {
@@ -329,8 +333,6 @@ const DrawResults = React.createClass({displayName: "DrawResults",
 					)
 				)
 			);
-
-			
 		}
 
 		return React.createElement("div", null);
@@ -338,7 +340,36 @@ const DrawResults = React.createClass({displayName: "DrawResults",
 
 	}
 });
-},{"../Draw.js":1}],3:[function(require,module,exports){
+},{}],5:[function(require,module,exports){
+
+const DrawResultsComponent = require("./DrawResultsComponent.js");
+
+module.exports = React.createClass({displayName: "exports",
+	getDefaultProps() {
+		return {
+		  draws: []
+		};
+	},
+	
+	render () {
+
+		var drawList = this.props.results.map(function(resultSet, index) {
+			return (
+				React.createElement(DrawResultsComponent, {key: index, index: index, resultSet: resultSet})
+			);
+		});
+
+		return (
+			React.createElement("div", {className: "row"}, 
+				React.createElement("div", {className: "col s12"}, 
+					drawList
+				)
+			)
+		);
+	}
+});
+
+},{"./DrawResultsComponent.js":4}],6:[function(require,module,exports){
 var DrawComponent = require("./components/DrawComponent.js");
 
 
@@ -372,4 +403,4 @@ ReactDOM.render(
   document.getElementById('content')
 );
 
-},{"./components/DrawComponent.js":2}]},{},[3]);
+},{"./components/DrawComponent.js":2}]},{},[6]);

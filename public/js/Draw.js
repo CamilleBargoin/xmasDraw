@@ -3,6 +3,7 @@ module.exports = function() {
 	this.participants = [];
 	this.results = [];
 
+	// Adds a new participant to the list, and if a spouse is given, it adds it too.
 	this.addParticipant = function(participant) {
 
 		if (typeof participant !== "object" ) {
@@ -20,6 +21,10 @@ module.exports = function() {
 
 	};
 
+
+	//  runs several checks to be sure the list of participants is good, then calls
+	// the recursive *process* method to build the result array and pass it to
+	// a callback
 	this.execute = function (callback) {
 
 		if (this.participants.length == 0) {
@@ -39,6 +44,10 @@ module.exports = function() {
 					return 0;
 				}
 			}
+
+			// the list is shuffled first
+			shuffle(this.participants);
+
 			this.results = this.process(this.participants, []);
 
 			callback(null, this.results);
@@ -100,4 +109,24 @@ module.exports = function() {
 			return matches;
 		}
 	};
+
+
+	var shuffle = function(array) {
+	  var currentIndex = array.length, temporaryValue, randomIndex;
+
+	  // While there remain elements to shuffle...
+	  while (0 !== currentIndex) {
+
+	    // Pick a remaining element...
+	    randomIndex = Math.floor(Math.random() * currentIndex);
+	    currentIndex -= 1;
+
+	    // And swap it with the current element.
+	    temporaryValue = array[currentIndex];
+	    array[currentIndex] = array[randomIndex];
+	    array[randomIndex] = temporaryValue;
+	  }
+
+	  return array;
+	}
 };
